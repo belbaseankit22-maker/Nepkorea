@@ -1,0 +1,865 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nepali ↔ Korean • Daily Learning</title>
+  <meta name="description" content="A beautiful, highly interactive Korean learning web app for Nepali speakers. Google Sign‑In, daily progress tracking, flashcards, quizzes, a voice‑over game, and PWA installability.">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Fun, engaging background */
+    .bg-aurora {
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(99,102,241,.25), transparent 60%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(236,72,153,.25), transparent 60%),
+                  radial-gradient(900px 700px at 30% 80%, rgba(16,185,129,.25), transparent 60%),
+                  linear-gradient(180deg, #0b1020 0%, #0e1328 100%);
+    }
+    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.08); }
+    .btn { @apply px-4 py-2 rounded-2xl shadow hover:shadow-lg transition font-semibold; }
+    .btn-primary { @apply bg-indigo-500 text-white hover:bg-indigo-600; }
+    .btn-ghost { @apply bg-white/10 text-white hover:bg-white/20; }
+    .badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-xl text-xs font-semibold bg-white/10 text-white; }
+    .card { @apply glass rounded-3xl p-5 shadow-xl border border-white/10; }
+    .title-gradient { background: linear-gradient(90deg,#a78bfa,#60a5fa,#34d399,#f472b6); -webkit-background-clip:text; background-clip:text; color: transparent; }
+    .floating { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+    .confetti { pointer-events:none; position:fixed; inset:0; overflow:hidden; }
+    .kbd { @apply px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-xs; }
+  </style>
+  <!-- Firebase (Auth + Firestore). Optional: works in Local Mode if not configured. -->
+  <script defer="" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer="" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script defer="" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- PWA manifest (created dynamically when you click Download PWA Kit) -->
+  <link id="manifestLink" rel="manifest" href="manifest.webmanifest">
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.absolute{position:absolute}.relative{position:relative}.left-4{left:1rem}.top-10{top:2.5rem}.mx-2{margin-left:0.5rem;margin-right:0.5rem}.mx-auto{margin-left:auto;margin-right:auto}.ml-auto{margin-left:auto}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.flex{display:flex}.grid{display:grid}.hidden{display:none}.size-10{width:2.5rem;height:2.5rem}.h-2{height:0.5rem}.h-56{height:14rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-72{width:18rem}.w-full{width:100%}.max-w-6xl{max-width:72rem}.max-w-full{max-width:100%}.list-decimal{list-style-type:decimal}.flex-wrap{flex-wrap:wrap}.place-items-center{place-items:center}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.border{border-width:1px}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/20{border-color:rgb(255 255 255 / 0.2)}.bg-indigo-500{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.bg-pink-500{--tw-bg-opacity:1;background-color:rgb(236 72 153 / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white\/10{background-color:rgb(255 255 255 / 0.1)}.bg-white\/5{background-color:rgb(255 255 255 / 0.05)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.from-indigo-500{--tw-gradient-from:#6366f1 var(--tw-gradient-from-position);--tw-gradient-to:rgb(99 102 241 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-indigo-500\/10{--tw-gradient-from:rgb(99 102 241 / 0.1) var(--tw-gradient-from-position);--tw-gradient-to:rgb(99 102 241 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-pink-500{--tw-gradient-to:#ec4899 var(--tw-gradient-to-position)}.to-pink-500\/10{--tw-gradient-to:rgb(236 72 153 / 0.1) var(--tw-gradient-to-position)}.p-5{padding:1.25rem}.p-4{padding:1rem}.px-4{padding-left:1rem;padding-right:1rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pl-5{padding-left:1.25rem}.pt-8{padding-top:2rem}.text-left{text-align:left}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.tracking-tight{letter-spacing:-0.025em}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.opacity-50{opacity:0.5}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.selection\:bg-indigo-500\/30 *::selection{background-color:rgb(99 102 241 / 0.3)}.selection\:bg-indigo-500\/30::selection{background-color:rgb(99 102 241 / 0.3)}@media (min-width: 640px){.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}</style></head>
+<body class="bg-aurora min-h-screen text-slate-100 selection:bg-indigo-500/30">
+  <!-- HEADER -->
+  <header class="max-w-6xl mx-auto px-4 pt-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="size-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-pink-500 grid place-items-center shadow floating">🇰🇷</div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight title-gradient">Nepali ↔ Korean Daily</h1>
+      </div>
+      <div class="flex items-center gap-2" id="authArea">
+        <button id="btnGoogle" class="btn btn-primary">Sign in with Google</button>
+        <button id="btnSignOut" class="btn btn-ghost hidden">Sign out</button>
+      </div>
+    </div>
+    <p class="mt-2 text-slate-300 text-sm">Learn daily‑use Korean words and phrases with Nepali support. Track your progress, earn points, and practice pronunciation with voice‑over. 🎯🔊</p>
+  </header>
+
+  <!-- STATS / PROGRESS -->
+  <section class="max-w-6xl mx-auto px-4 mt-6 grid sm:grid-cols-3 gap-4">
+    <div class="card">
+      <div class="text-sm text-slate-300">Daily Streak</div>
+      <div class="mt-1 text-3xl font-extrabold" id="streak">1 🔥</div>
+      <div class="mt-2 h-2 bg-white/10 rounded-full overflow-hidden">
+        <div id="streakBar" class="h-full bg-indigo-500 rounded-full" style="width: 5%;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="text-sm text-slate-300">Today’s XP</div>
+      <div class="mt-1 text-3xl font-extrabold" id="xp">0 ⭐</div>
+      <div class="mt-2 h-2 bg-white/10 rounded-full overflow-hidden">
+        <div id="xpBar" class="h-full bg-pink-500 rounded-full" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="text-sm text-slate-300">Words Learned</div>
+      <div class="mt-1 text-3xl font-extrabold" id="learned">0 📚</div>
+      <div class="mt-2 text-xs text-slate-300">Keep going! Each correct answer earns points and triggers a voice‑over for a new word.</div>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <section class="max-w-6xl mx-auto px-4 mt-6">
+    <div class="flex flex-wrap gap-2">
+      <button class="btn btn-ghost" data-tab="flash">🔁 Flashcards</button>
+      <button class="btn btn-ghost" data-tab="quiz">❓ Quiz</button>
+      <button class="btn btn-ghost" data-tab="game">🎮 Firefly Words</button>
+      <button class="btn btn-ghost" data-tab="library">📖 Library</button>
+      <span class="ml-auto badge">Language: <select id="langPref" class="bg-transparent outline-none"><option value="ne">Nepali</option><option value="en">English</option></select></span>
+    </div>
+  </section>
+
+  <!-- MAIN VIEWS -->
+  <main class="max-w-6xl mx-auto px-4 mt-4 space-y-6">
+    <!-- FLASHCARDS -->
+    <div id="view-flash" class="card">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Flashcards</h2>
+        <div class="flex gap-2">
+          <button class="btn btn-primary" id="btnSpeak">🔊 Speak</button>
+          <button class="btn btn-ghost" id="btnFlip">Flip</button>
+          <button class="btn btn-ghost" id="btnNext">Next</button>
+        </div>
+      </div>
+      <div class="mt-4 grid sm:grid-cols-2 gap-4">
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/10" id="flashFront">
+          <div class="text-sm text-slate-300">Korean (한국어)</div>
+          <div class="mt-2 text-3xl font-extrabold" id="flashKo">화장실</div>
+          <div class="mt-1 text-slate-300" id="flashRom">hwajangsil</div>
+        </div>
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/10" id="flashBack">
+          <div class="text-sm text-slate-300">Meaning (<span id="meaningLang">नेपाली</span>)</div>
+          <div class="mt-2 text-2xl font-bold" id="flashMean">शौचालय</div>
+          <div class="mt-4 flex gap-2">
+            <button class="btn btn-primary" id="btnKnow">I knew this ✔</button>
+            <button class="btn btn-ghost" id="btnPractice">Practice again 🔁</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="view-quiz" class="card hidden">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Quick Quiz</h2>
+        <div class="badge" id="quizStatus">1/5</div>
+      </div>
+      <p class="text-slate-300 text-sm">Choose the correct meaning of the Korean word. (Voice: Korean first, then Nepali.)</p>
+      <div class="mt-4">
+        <div class="text-2xl font-extrabold" id="quizWord">안녕하세요</div>
+        <div class="mt-4 grid sm:grid-cols-2 gap-3" id="quizOptions"><button class="btn btn-ghost w-full text-left">नमस्ते</button><button class="btn btn-ghost w-full text-left">मीठो छ</button><button class="btn btn-ghost w-full text-left">बिस्तारै</button><button class="btn btn-ghost w-full text-left">औषधि</button></div>
+      </div>
+      <div class="mt-4 flex items-center gap-2">
+        <button class="btn btn-ghost" id="btnQuizSpeak">🔊 Hear word</button>
+        <button class="btn btn-ghost" id="btnQuizNext">Next</button>
+      </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="view-game" class="card hidden">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Firefly Words — Type to Catch 🔥</h2>
+        <div class="badge">Game XP: <span id="gameXp">0</span></div>
+      </div>
+      <p class="text-slate-300 text-sm">A word floats by. Type its <b>romanization</b> (e.g., annyeong) or the <b>Nepali meaning</b> and press Enter. Correct answers award points and play a voice‑over that introduces a new Korean word.</p>
+      <div class="mt-4 relative h-56 rounded-3xl overflow-hidden bg-gradient-to-tr from-indigo-500/10 to-pink-500/10 border border-white/10" id="gameArea">
+        <div id="firefly" class="absolute left-4 top-10 px-4 py-2 rounded-2xl bg-white/10 border border-white/20 shadow text-xl font-bold" style="transform: translate(11.2px, 0.740247px);">물 (mul)</div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <input id="gameInput" class="w-full px-4 py-2 rounded-2xl bg-white/10 border border-white/20 outline-none" placeholder="Type romanization or Nepali meaning, then Enter">
+        <button id="btnGameSpeak" class="btn btn-ghost">🔊 Voice‑over</button>
+        <button id="btnGameNew" class="btn btn-primary">New Word</button>
+      </div>
+      <div id="gameFeedback" class="mt-2 text-sm"></div>
+    </div>
+
+    <!-- LIBRARY -->
+    <div id="view-library" class="card hidden">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Library — Daily Use Words &amp; Phrases</h2>
+        <input id="search" placeholder="Search (Korean, romanization, Nepali, English)" class="px-4 py-2 rounded-2xl bg-white/10 border border-white/20 outline-none w-72 max-w-full">
+      </div>
+      <div class="mt-4 grid md:grid-cols-2 gap-3" id="libList"><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">안녕하세요 <span class="text-sm text-slate-300">(annyeonghaseyo)</span></div>
+              <div class="text-slate-300 text-sm">नमस्ते</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('안녕하세요'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;안녕하세요 — annyeonghaseyo&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">감사합니다 <span class="text-sm text-slate-300">(gamsahamnida)</span></div>
+              <div class="text-slate-300 text-sm">धन्यवाद</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('감사합니다'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;감사합니다 — gamsahamnida&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">죄송합니다 <span class="text-sm text-slate-300">(joesonghamnida)</span></div>
+              <div class="text-slate-300 text-sm">माफ गर्नुहोस्</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('죄송합니다'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;죄송합니다 — joesonghamnida&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">괜찮아요 <span class="text-sm text-slate-300">(gwaenchana-yo)</span></div>
+              <div class="text-slate-300 text-sm">ठिक छ</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('괜찮아요'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;괜찮아요 — gwaenchana-yo&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">물 <span class="text-sm text-slate-300">(mul)</span></div>
+              <div class="text-slate-300 text-sm">पानी</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('물'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;물 — mul&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">밥 <span class="text-sm text-slate-300">(bap)</span></div>
+              <div class="text-slate-300 text-sm">भात/भोजन</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('밥'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;밥 — bap&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">버스 <span class="text-sm text-slate-300">(beoseu)</span></div>
+              <div class="text-slate-300 text-sm">बस</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('버스'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;버스 — beoseu&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">학교 <span class="text-sm text-slate-300">(hakgyo)</span></div>
+              <div class="text-slate-300 text-sm">विद्यालय</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('학교'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;학교 — hakgyo&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">얼마예요? <span class="text-sm text-slate-300">(eolmayeyo?)</span></div>
+              <div class="text-slate-300 text-sm">कति हो?</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('얼마예요?'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;얼마예요? — eolmayeyo?&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">화장실 <span class="text-sm text-slate-300">(hwajangsil)</span></div>
+              <div class="text-slate-300 text-sm">शौचालय</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('화장실'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;화장실 — hwajangsil&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">맛있어요 <span class="text-sm text-slate-300">(masisseoyo)</span></div>
+              <div class="text-slate-300 text-sm">मीठो छ</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('맛있어요'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;맛있어요 — masisseoyo&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">도와주세요 <span class="text-sm text-slate-300">(dowajuseyo)</span></div>
+              <div class="text-slate-300 text-sm">मद्दत गर्नुहोस्</div>
+              <div class="mt-2"><span class="badge">phrase</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('도와주세요'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;도와주세요 — dowajuseyo&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">병원 <span class="text-sm text-slate-300">(byeong-won)</span></div>
+              <div class="text-slate-300 text-sm">अस्पताल</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('병원'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;병원 — byeong-won&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">약 <span class="text-sm text-slate-300">(yak)</span></div>
+              <div class="text-slate-300 text-sm">औषधि</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('약'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;약 — yak&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">카드 <span class="text-sm text-slate-300">(kadeu)</span></div>
+              <div class="text-slate-300 text-sm">कार्ड</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('카드'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;카드 — kadeu&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">현금 <span class="text-sm text-slate-300">(hyeongeum)</span></div>
+              <div class="text-slate-300 text-sm">नगद</div>
+              <div class="mt-2"><span class="badge">noun</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('현금'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;현금 — hyeongeum&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">왼쪽 <span class="text-sm text-slate-300">(oenjjok)</span></div>
+              <div class="text-slate-300 text-sm">देब्रे</div>
+              <div class="mt-2"><span class="badge">adj</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('왼쪽'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;왼쪽 — oenjjok&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">오른쪽 <span class="text-sm text-slate-300">(oreunjjok)</span></div>
+              <div class="text-slate-300 text-sm">दाहिने</div>
+              <div class="mt-2"><span class="badge">adj</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('오른쪽'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;오른쪽 — oreunjjok&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">천천히 <span class="text-sm text-slate-300">(cheoncheonhi)</span></div>
+              <div class="text-slate-300 text-sm">बिस्तारै</div>
+              <div class="mt-2"><span class="badge">adv</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('천천히'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;천천히 — cheoncheonhi&quot;)">Copy</button>
+            </div>
+          </div></div><div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xl font-extrabold">빨리 <span class="text-sm text-slate-300">(ppalli)</span></div>
+              <div class="text-slate-300 text-sm">छिटो</div>
+              <div class="mt-2"><span class="badge">adv</span></div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost" onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('빨리'));">🔊</button>
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(&quot;빨리 — ppalli&quot;)">Copy</button>
+            </div>
+          </div></div></div>
+    </div>
+
+    <!-- PWA / ANDROID HELP -->
+    <div class="card">
+      <h2 class="text-xl font-bold">Use Offline &amp; Install as an App</h2>
+      <ol class="mt-2 text-slate-300 text-sm list-decimal pl-5 space-y-2">
+        <li><b>Local (desktop) app‑like:</b> save this file as <span class="kbd">index.html</span> and open in Chrome/Edge. It runs fully offline (no server needed) but service workers (for install prompt) require HTTPS/local server.</li>
+        <li><b>Android PWA (recommended):</b> host the three files <span class="kbd">index.html</span>, <span class="kbd">manifest.webmanifest</span>, <span class="kbd">sw.js</span> on HTTPS (e.g., Netlify/GitHub Pages). Then open the link on Android → Chrome menu → <b>Add to Home screen</b>. You’ll get a standalone app with offline cache.</li>
+        <li><b>APK/Play Store:</b> wrap this site with Capacitor (WebView) or TWA. Click <b>Android Build Guide</b> below for copy‑paste commands and minimal code.</li>
+      </ol>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button id="btnPwaKit" class="btn btn-primary">⬇️ Download PWA Kit (manifest + sw.js)</button>
+        <button id="btnInstall" class="btn btn-ghost opacity-50" disabled="">📲 Install App (PWA)</button>
+        <button id="btnAndroidGuide" class="btn btn-ghost">🤖 Android Build Guide</button>
+      </div>
+      <p class="mt-2 text-xs text-slate-400">Note: Install button appears after the browser fires the <code>beforeinstallprompt</code> event (served via HTTPS).</p>
+    </div>
+  </main>
+
+  <!-- CONFETTI LAYER -->
+  <canvas id="confetti" class="confetti"></canvas>
+
+  <!-- FOOTER -->
+  <footer class="max-w-6xl mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+    <div>
+      <button id="btnDownload" class="btn btn-ghost">⬇️ Download this app as HTML</button>
+      <span class="mx-2">•</span>
+      <a class="underline" href="#" id="howDeploy">How to deploy</a>
+    </div>
+    <div class="mt-2">Tip: Add your Firebase config (optional) to enable cloud sync across devices.</div>
+  </footer>
+
+  <script>
+    // ==========================
+    // 1) CONFIG & UTILITIES
+    // ==========================
+    const firebaseConfig = {
+      // TODO: Replace with your Firebase web app config to enable Google Sign‑In & sync.
+      // Get yours from https://console.firebase.google.com (Project settings → SDK setup & config).
+      // apiKey: "",
+      // authDomain: "",
+      // projectId: "",
+      // storageBucket: "",
+      // messagingSenderId: "",
+      // appId: "",
+    };
+
+    const TODAY_KEY = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+
+    const dbLocal = {
+      user: null,
+      stats: JSON.parse(localStorage.getItem('nkdl_stats')||'{}'),
+      learned: JSON.parse(localStorage.getItem('nkdl_learned')||'[]'),
+      xp: JSON.parse(localStorage.getItem('nkdl_xp')||'{}'), // by day
+      streak: Number(localStorage.getItem('nkdl_streak')||'0'),
+      lastLogin: localStorage.getItem('nkdl_last')||null,
+      lang: localStorage.getItem('nkdl_lang')||'ne',
+    };
+
+    function saveLocal() {
+      localStorage.setItem('nkdl_stats', JSON.stringify(dbLocal.stats));
+      localStorage.setItem('nkdl_learned', JSON.stringify(dbLocal.learned));
+      localStorage.setItem('nkdl_xp', JSON.stringify(dbLocal.xp));
+      localStorage.setItem('nkdl_streak', dbLocal.streak);
+      localStorage.setItem('nkdl_last', TODAY_KEY);
+      localStorage.setItem('nkdl_lang', dbLocal.lang);
+    }
+
+    function addXp(amount=5) {
+      if (!dbLocal.xp[TODAY_KEY]) dbLocal.xp[TODAY_KEY]=0;
+      dbLocal.xp[TODAY_KEY]+=amount;
+      saveLocal();
+      renderStats();
+    }
+
+    function markLearned(id) {
+      if (!dbLocal.learned.includes(id)) dbLocal.learned.push(id);
+      saveLocal();
+      renderStats();
+    }
+
+    function bumpStreakOnLogin() {
+      const last = dbLocal.lastLogin;
+      if (!last) { dbLocal.streak = 1; }
+      else {
+        const diff = (Date.parse(TODAY_KEY)-Date.parse(last))/(1000*3600*24);
+        if (diff===1) dbLocal.streak += 1; else if (diff>1) dbLocal.streak = 1; // reset
+      }
+      dbLocal.lastLogin = TODAY_KEY; saveLocal();
+    }
+
+    function speak(text, lang='ko-KR', rate=0.98) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang; u.rate = rate; u.pitch = 1; u.volume = 1;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    }
+
+    function celebrate() {
+      // lightweight confetti
+      const canvas = document.getElementById('confetti');
+      const ctx = canvas.getContext('2d');
+      canvas.width = innerWidth; canvas.height = innerHeight;
+      const parts = Array.from({length: 120}, () => ({
+        x: Math.random()*canvas.width,
+        y: -20- Math.random()*canvas.height*0.5,
+        s: 5+Math.random()*8,
+        v: 2+Math.random()*4,
+        r: Math.random()*Math.PI,
+      }));
+      let t = 0;
+      const anim = () => {
+        t++; ctx.clearRect(0,0,canvas.width, canvas.height);
+        for (const p of parts) {
+          p.y += p.v; p.r += 0.05;
+          ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+          ctx.fillStyle = `hsl(${(p.x+p.y+t)%360} 90% 60%)`;
+          ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s);
+          ctx.restore();
+          if (p.y>canvas.height+20) p.y = -20;
+        }
+        if (t<200) requestAnimationFrame(anim); else ctx.clearRect(0,0,canvas.width, canvas.height);
+      };
+      anim();
+    }
+
+    // ==========================
+    // 2) WORDS & PHRASES DATA
+    // ==========================
+    const WORDS = [
+      { id:1, ko:"안녕하세요", rom:"annyeonghaseyo", ne:"नमस्ते", en:"hello", kind:"phrase" },
+      { id:2, ko:"감사합니다", rom:"gamsahamnida", ne:"धन्यवाद", en:"thank you", kind:"phrase" },
+      { id:3, ko:"죄송합니다", rom:"joesonghamnida", ne:"माफ गर्नुहोस्", en:"sorry", kind:"phrase" },
+      { id:4, ko:"괜찮아요", rom:"gwaenchana-yo", ne:"ठिक छ", en:"it’s okay", kind:"phrase" },
+      { id:5, ko:"물", rom:"mul", ne:"पानी", en:"water", kind:"noun" },
+      { id:6, ko:"밥", rom:"bap", ne:"भात/भोजन", en:"rice/meal", kind:"noun" },
+      { id:7, ko:"버스", rom:"beoseu", ne:"बस", en:"bus", kind:"noun" },
+      { id:8, ko:"학교", rom:"hakgyo", ne:"विद्यालय", en:"school", kind:"noun" },
+      { id:9, ko:"얼마예요?", rom:"eolmayeyo?", ne:"कति हो?", en:"how much?", kind:"phrase" },
+      { id:10, ko:"화장실", rom:"hwajangsil", ne:"शौचालय", en:"toilet", kind:"noun" },
+      { id:11, ko:"맛있어요", rom:"masisseoyo", ne:"मीठो छ", en:"delicious", kind:"phrase" },
+      { id:12, ko:"도와주세요", rom:"dowajuseyo", ne:"मद्दत गर्नुहोस्", en:"please help", kind:"phrase" },
+      { id:13, ko:"병원", rom:"byeong-won", ne:"अस्पताल", en:"hospital", kind:"noun" },
+      { id:14, ko:"약", rom:"yak", ne:"औषधि", en:"medicine", kind:"noun" },
+      { id:15, ko:"카드", rom:"kadeu", ne:"कार्ड", en:"card", kind:"noun" },
+      { id:16, ko:"현금", rom:"hyeongeum", ne:"नगद", en:"cash", kind:"noun" },
+      { id:17, ko:"왼쪽", rom:"oenjjok", ne:"देब्रे", en:"left", kind:"adj" },
+      { id:18, ko:"오른쪽", rom:"oreunjjok", ne:"दाहिने", en:"right", kind:"adj" },
+      { id:19, ko:"천천히", rom:"cheoncheonhi", ne:"बिस्तारै", en:"slowly", kind:"adv" },
+      { id:20, ko:"빨리", rom:"ppalli", ne:"छिटो", en:"quickly", kind:"adv" },
+    ];
+
+    // ==========================
+    // 3) AUTH (Firebase optional)
+    // ==========================
+    let app, auth, firestore, userDocRef; let hasFirebase=false;
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        if (Object.keys(firebaseConfig).length>0) {
+          app = firebase.initializeApp(firebaseConfig);
+          auth = firebase.auth();
+          firestore = firebase.firestore();
+          hasFirebase = true;
+        }
+      } catch(e) {
+        console.warn('Firebase not configured, running Local Mode.', e);
+      }
+
+      // UI handlers
+      const btnGoogle = document.getElementById('btnGoogle');
+      const btnSignOut = document.getElementById('btnSignOut');
+      btnGoogle.onclick = async () => {
+        if (!hasFirebase) { alert('Firebase not configured. Running in Local Mode.'); return; }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+      };
+      btnSignOut.onclick = async () => { if (hasFirebase) await auth.signOut(); dbLocal.user=null; renderAuth(); };
+
+      if (hasFirebase) {
+        auth.onAuthStateChanged(async (u) => {
+          dbLocal.user = u ? { uid: u.uid, name: u.displayName, email: u.email, photo: u.photoURL } : null;
+          if (u) {
+            bumpStreakOnLogin();
+            userDocRef = firestore.collection('nkdl_users').doc(u.uid);
+            const snap = await userDocRef.get();
+            if (snap.exists) {
+              const data = snap.data();
+              dbLocal.streak = data.streak||dbLocal.streak;
+              dbLocal.learned = data.learned||dbLocal.learned;
+              dbLocal.xp = data.xp||dbLocal.xp;
+              dbLocal.lang = data.lang||dbLocal.lang;
+            } else {
+              await userDocRef.set({
+                createdAt: Date.now(), streak: dbLocal.streak, learned: dbLocal.learned, xp: dbLocal.xp, lang: dbLocal.lang,
+              });
+            }
+            saveToCloud();
+          }
+          renderAuth(); renderStats(); initUI();
+        });
+      } else {
+        // Local mode
+        bumpStreakOnLogin();
+        renderAuth(); renderStats(); initUI();
+      }
+
+      // Try to register service worker if available at ./sw.js
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(()=>{/* ignore in local file:// */});
+      }
+    });
+
+    async function saveToCloud() {
+      try {
+        if (hasFirebase && dbLocal.user && userDocRef) {
+          await userDocRef.set({
+            streak: dbLocal.streak, learned: dbLocal.learned, xp: dbLocal.xp, lang: dbLocal.lang, updatedAt: Date.now()
+          }, { merge:true });
+        }
+      } catch(e){ console.warn('Cloud save failed', e); }
+    }
+
+    function renderAuth(){
+      const btnGoogle = document.getElementById('btnGoogle');
+      const btnSignOut = document.getElementById('btnSignOut');
+      const authArea = document.getElementById('authArea');
+      if (dbLocal.user) {
+        btnGoogle.classList.add('hidden'); btnSignOut.classList.remove('hidden');
+        if (!document.getElementById('userChip')) {
+          const chip = document.createElement('div');
+          chip.id='userChip'; chip.className='badge';
+          chip.textContent = `${dbLocal.user.name||'User'}`;
+          authArea.insertBefore(chip, btnSignOut);
+        }
+      } else {
+        btnGoogle.classList.remove('hidden'); btnSignOut.classList.add('hidden');
+        const chip = document.getElementById('userChip'); if (chip) chip.remove();
+      }
+    }
+
+    function renderStats(){
+      const dayXp = dbLocal.xp[TODAY_KEY]||0;
+      document.getElementById('xp').textContent = `${dayXp} ⭐`;
+      document.getElementById('xpBar').style.width = Math.min(100, dayXp).toString()+"%";
+      document.getElementById('streak').textContent = `${dbLocal.streak} 🔥`;
+      document.getElementById('streakBar').style.width = Math.min(100, dbLocal.streak*5)+"%";
+      document.getElementById('learned').textContent = `${dbLocal.learned.length} 📚`;
+    }
+
+    // ==========================
+    // 4) NAV / VIEWS
+    // ==========================
+    function initUI(){
+      // Tabs
+      document.querySelectorAll('[data-tab]').forEach(btn=>{
+        btn.onclick = ()=>{
+          const tab = btn.getAttribute('data-tab');
+          document.querySelectorAll('[id^=view-]').forEach(v=>v.classList.add('hidden'));
+          document.getElementById(`view-${tab}`).classList.remove('hidden');
+        }
+      });
+
+      const langSel = document.getElementById('langPref');
+      langSel.value = dbLocal.lang; document.getElementById('meaningLang').textContent = dbLocal.lang==='ne'?'नेपाली':'English';
+      langSel.onchange = ()=>{ dbLocal.lang = langSel.value; saveLocal(); document.getElementById('meaningLang').textContent = dbLocal.lang==='ne'?'नेपाली':'English'; renderFlash(); };
+
+      // Flashcards
+      document.getElementById('btnNext').onclick = nextFlash;
+      document.getElementById('btnFlip').onclick = flipFlash;
+      document.getElementById('btnSpeak').onclick = ()=> speak(currentWord.ko,'ko-KR');
+      document.getElementById('btnKnow').onclick = ()=>{ markLearned(currentWord.id); addXp(10); celebrate(); nextFlash(); };
+      document.getElementById('btnPractice').onclick = ()=>{ addXp(2); };
+
+      // Quiz
+      document.getElementById('btnQuizSpeak').onclick = ()=> speak(quizWord.ko,'ko-KR');
+      document.getElementById('btnQuizNext').onclick = nextQuiz;
+
+      // Game
+      document.getElementById('btnGameNew').onclick = newGameWord;
+      document.getElementById('btnGameSpeak').onclick = ()=> voiceOverNewWord(currentGameWord);
+      const gi = document.getElementById('gameInput');
+      gi.addEventListener('keydown', (e)=>{
+        if (e.key==='Enter') checkGameAnswer();
+      });
+
+      // Library
+      document.getElementById('search').addEventListener('input', renderLibrary);
+
+      // Download & deploy helper
+      document.getElementById('btnDownload').onclick = downloadSelf;
+      document.getElementById('howDeploy').onclick = (e)=>{
+        e.preventDefault(); alert('To deploy: 1) Save this file as index.html. 2) Host via Netlify/Vercel/GitHub Pages (HTTPS) for install prompt & offline. 3) Add your Firebase config (optional) to enable Google Sign‑In & sync.');
+      };
+
+      // PWA Kit & Install
+      document.getElementById('btnPwaKit').onclick = downloadPwaKit;
+      setupInstallPrompt();
+      document.getElementById('btnAndroidGuide').onclick = showAndroidGuide;
+
+      // Initial content
+      nextFlash();
+      nextQuiz();
+      newGameWord();
+      renderLibrary();
+    }
+
+    // ==========================
+    // 5) FLASHCARDS
+    // ==========================
+    let currentWord = WORDS[0]; let flip=false;
+    function renderFlash(){
+      document.getElementById('flashKo').textContent = currentWord.ko;
+      document.getElementById('flashRom').textContent = currentWord.rom;
+      document.getElementById('flashMean').textContent = dbLocal.lang==='ne'? currentWord.ne : currentWord.en;
+    }
+    function nextFlash(){ currentWord = WORDS[Math.floor(Math.random()*WORDS.length)]; flip=false; renderFlash(); }
+    function flipFlash(){
+      flip = !flip;
+      document.getElementById('flashFront').classList.toggle('hidden', flip);
+      document.getElementById('flashBack').classList.toggle('hidden', !flip);
+    }
+
+    // ==========================
+    // 6) QUIZ
+    // ==========================
+    let quizWord = WORDS[1], quizIndex=0;
+    function nextQuiz(){
+      quizIndex++; document.getElementById('quizStatus').textContent = `${quizIndex}/5`;
+      quizWord = WORDS[Math.floor(Math.random()*WORDS.length)];
+      document.getElementById('quizWord').textContent = quizWord.ko;
+      const opts = new Set([quizWord]);
+      while (opts.size<4) opts.add(WORDS[Math.floor(Math.random()*WORDS.length)]);
+      const options = Array.from(opts).sort(()=>Math.random()-0.5);
+      const wrap = document.getElementById('quizOptions');
+      wrap.innerHTML='';
+      options.forEach(o=>{
+        const btn = document.createElement('button');
+        btn.className='btn btn-ghost w-full text-left';
+        btn.textContent = dbLocal.lang==='ne'? o.ne : o.en;
+        btn.onclick = ()=>{
+          if (o.id===quizWord.id) { addXp(10); celebrate(); speak(quizWord.ko,'ko-KR'); setTimeout(()=> speak(dbLocal.lang==='ne'? quizWord.ne:quizWord.en, dbLocal.lang==='ne'? 'ne-NP':'en-US', 1), 800); }
+          else { addXp(1); }
+          nextQuiz();
+        };
+        wrap.appendChild(btn);
+      });
+    }
+
+    // ==========================
+    // 7) GAME — Firefly Words
+    // ==========================
+    let currentGameWord = WORDS[2]; let gameScore=0; let animId=null;
+    function newGameWord(){
+      currentGameWord = WORDS[Math.floor(Math.random()*WORDS.length)];
+      const el = document.getElementById('firefly');
+      el.textContent = `${currentGameWord.ko} (${currentGameWord.rom})`;
+      // animate across
+      if (animId) cancelAnimationFrame(animId);
+      const area = document.getElementById('gameArea');
+      const w = area.clientWidth; let x=10; const y = 20 + Math.random()*(area.clientHeight-60);
+      const step = ()=>{
+        x += 1.2; el.style.transform = `translate(${x}px, ${y}px)`;
+        if (x < w-140) { animId = requestAnimationFrame(step); }
+      }; step();
+      document.getElementById('gameFeedback').textContent = '';
+      document.getElementById('gameInput').value = '';
+    }
+
+    function checkGameAnswer(){
+      const val = document.getElementById('gameInput').value.trim().toLowerCase();
+      if (!val) return;
+      const ok = (val===currentGameWord.rom.toLowerCase()) || (val===(dbLocal.lang==='ne'? currentGameWord.ne:currentGameWord.en).toLowerCase());
+      const fb = document.getElementById('gameFeedback');
+      if (ok) {
+        gameScore += 15; addXp(15); markLearned(currentGameWord.id); celebrate();
+        fb.innerHTML = `<span class='text-green-300 font-semibold'>Great! +15 XP.</span> Voice‑over introducing a new word…`;
+        const next = WORDS.filter(w=>w.id!==currentGameWord.id)[Math.floor(Math.random()*(WORDS.length-1))];
+        voiceOverNewWord(next);
+        setTimeout(newGameWord, 900);
+      } else {
+        fb.innerHTML = `<span class='text-yellow-300 font-semibold'>Almost! Try again.</span>`;
+        addXp(1);
+      }
+      document.getElementById('gameXp').textContent = gameScore;
+    }
+
+    function voiceOverNewWord(word){
+      const introKo = `새 단어: ${word.ko}. 따라 해 보세요.`;
+      const introNe = `नयाँ शब्द: ${word.ko} — उच्चारण अभ्यास गर्नुहोस्।`;
+      speak(introKo,'ko-KR',0.98);
+      setTimeout(()=> speak(word.ko,'ko-KR',0.98), 900);
+      setTimeout(()=> speak(introNe,'ne-NP',1), 1800);
+    }
+
+    // ==========================
+    // 8) LIBRARY
+    // ==========================
+    function renderLibrary(){
+      const q = document.getElementById('search').value.trim().toLowerCase();
+      const list = document.getElementById('libList');
+      list.innerHTML='';
+      WORDS.filter(w=>{
+        if (!q) return true;
+        return w.ko.includes(q) || w.rom.toLowerCase().includes(q) || w.ne.toLowerCase().includes(q) || w.en.toLowerCase().includes(q);
+      }).forEach(w=>{
+        const item = document.createElement('div');
+        item.className='p-4 rounded-2xl bg-white/5 border border-white/10';
+        item.innerHTML = `
+          <div class='flex items-start justify-between gap-2'>
+            <div>
+              <div class='text-xl font-extrabold'>${w.ko} <span class='text-sm text-slate-300'>(${w.rom})</span></div>
+              <div class='text-slate-300 text-sm'>${dbLocal.lang==='ne'? w.ne : w.en}</div>
+              <div class='mt-2'><span class='badge'>${w.kind}</span></div>
+            </div>
+            <div class='flex gap-2'>
+              <button class='btn btn-ghost' onclick="speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('${w.ko}'));">🔊</button>
+              <button class='btn btn-primary' onclick='navigator.clipboard.writeText("${w.ko} — ${w.rom}")'>Copy</button>
+            </div>
+          </div>`;
+        list.appendChild(item);
+      });
+    }
+
+    // ==========================
+    // 9) SELF‑DOWNLOAD (HTML link)
+    // ==========================
+    async function downloadSelf(){
+      const html = document.documentElement.outerHTML;
+      const blob = new Blob([html], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'nepali-korean-daily.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1000);
+    }
+
+    // ==========================
+    // 10) PWA KIT (manifest + sw.js)
+    // ==========================
+    function downloadPwaKit(){
+      const manifest = {
+        name: "Nepali ↔ Korean Daily",
+        short_name: "NK Daily",
+        start_url: ".",
+        scope: ".",
+        display: "standalone",
+        background_color: "#0e1328",
+        theme_color: "#6d28d9",
+        icons: [
+          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }
+        ]
+      };
+      downloadText('manifest.webmanifest', JSON.stringify(manifest, null, 2));
+
+      const sw = `/* Simple offline cache */\nconst CACHE='nkdl-v1';\nconst ASSETS=['./','./index.html','https://cdn.tailwindcss.com'];\nself.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});\nself.addEventListener('activate',e=>{e.waitUntil(self.clients.claim());});\nself.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const copy=res.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); return res;})).catch(()=>caches.match('./')));});`;
+      downloadText('sw.js', sw);
+
+      alert('PWA kit downloaded. Place manifest.webmanifest and sw.js next to index.html on HTTPS hosting.');
+    }
+
+    function downloadText(filename, text){
+      const blob = new Blob([text], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1000);
+    }
+
+    // Install prompt handler
+    function setupInstallPrompt(){
+      let deferred; const btn = document.getElementById('btnInstall');
+      window.addEventListener('beforeinstallprompt', (e)=>{
+        e.preventDefault(); deferred = e; btn.disabled=false; btn.classList.remove('opacity-50');
+      });
+      btn.onclick = async ()=>{ if (!deferred) { alert('Open over HTTPS to see the install prompt.'); return; } deferred.prompt(); const { outcome } = await deferred.userChoice; if(outcome==='accepted'){ celebrate(); } deferred=null; };
+      btn.disabled = true; btn.classList.add('opacity-50');
+    }
+
+    // ==========================
+    // 11) ANDROID BUILD GUIDE (APK)
+    // ==========================
+    function showAndroidGuide(){
+      const msg = `\nANDROID APK (two easy paths)\n\nA) Capacitor (WebView wrapper)\n1) Install Node.js.\n2) In a new folder, put your web files (index.html, sw.js, manifest.webmanifest, icons/).\n3) Run:\n   npm init -y\n   npm i @capacitor/core @capacitor/cli\n   npx cap init \'NK Daily\' com.example.nkdaily --web-dir .\n   npx cap add android\n   npx cap copy\n   npx cap open android\n4) In Android Studio: Build > Build Bundle(s)/APK(s) > Build APK(s).\n5) Install the generated APK on your phone.\n\nB) Trusted Web Activity (TWA) for PWA\n1) Host the PWA over HTTPS with a verified domain.\n2) Use Google Bubblewrap:\n   npm i -g @bubblewrap/cli\n   bubblewrap init --manifest=https://YOUR-DOMAIN/manifest.webmanifest\n   bubblewrap build\n   bubblewrap install\n3) Upload to Play Console if you want to publish.\n\nNotes\n• PWA install (Add to Home screen) needs HTTPS + manifest + sw.js.\n• If you share as file:// on Android, service workers won\'t register. Use a local server app or host online.\n• Replace app name, package id, and icons before publishing.`;
+      alert(msg);
+    }
+  </script>
+
+
+</body></html>
